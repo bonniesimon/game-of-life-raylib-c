@@ -1,0 +1,17 @@
+# Ignore compiled files
+*.o
+*.out
+*.exe
+
+# Ignore the executable file in the root directory
+main
+
+# Ignore files in the dist/ directory
+dist/
+
+# Ignore any temporary files or directories
+*.dSYM/
+*.swp
+*~
+
+**/*.local.*
