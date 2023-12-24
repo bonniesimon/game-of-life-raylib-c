@@ -8,11 +8,11 @@
 #define SCREEN_WIDTH 1280
 #define SCREEN_HEIGHT 720
 
-// typedef struct {
-//   bool **grid;
-//   int rows;
-//   int cols;
-// };
+typedef struct {
+  bool **grid;
+  int rows;
+  int cols;
+} Board;
 
 bool **create_grid(int rows, int cols) {
   bool **grid = (bool **)malloc(rows * sizeof(bool *));
@@ -37,28 +37,28 @@ bool **create_grid(int rows, int cols) {
   return grid;
 }
 
-void fill_grid(bool **grid, int rows, int cols) {
-  for (int r = 0; r < rows; r++) {
-    for (int c = 0; c < cols; c++) {
-      grid[r][c] = rand() % 2 == 0 ? false : true;
+void fill_grid(Board *board) {
+  for (int r = 0; r < board->rows; r++) {
+    for (int c = 0; c < board->cols; c++) {
+      board->grid[r][c] = rand() % 2 == 0 ? false : true;
     }
   }
 }
 
-void print_grid(bool **grid, int rows, int cols) {
-  for (int r = 0; r < rows; r++) {
-    for (int c = 0; c < cols; c++) {
-      printf("%d  ", grid[r][c]);
+void print_grid(Board *board) {
+  for (int r = 0; r < board->rows; r++) {
+    for (int c = 0; c < board->cols; c++) {
+      printf("%d  ", board->grid[r][c]);
     }
     printf("\n");
   }
 }
 
 void update_state(){};
-void draw_state(bool **grid, int rows, int cols) {
-  for (int r = 0; r < rows; r++) {
-    for (int c = 0; c < cols; c++) {
-      if (grid[r][c] == true) {
+void draw_state(Board *board) {
+  for (int r = 0; r < board->rows; r++) {
+    for (int c = 0; c < board->cols; c++) {
+      if (board->grid[r][c] == true) {
         int scale = 10;
         DrawRectangle(r * scale, c * scale, scale, scale, YELLOW);
       }
@@ -73,16 +73,20 @@ int main() {
   int grid_width = SCREEN_WIDTH / 10;
   int grid_height = SCREEN_HEIGHT / 10;
 
-  bool **grid = create_grid(grid_height, grid_width);
-  // print_grid(grid, grid_height, grid_width);
-  fill_grid(grid, grid_height, grid_width);
+  Board board = {0};
+
+  board.grid = create_grid(grid_height, grid_width);
+  board.rows = grid_height;
+  board.cols = grid_width;
+  fill_grid(&board);
+  print_grid(&board);
 
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
       ClearBackground(DARKGRAY);
       update_state();
-      draw_state(grid, grid_height, grid_width);
+      draw_state(&board);
     }
     EndDrawing();
   }
