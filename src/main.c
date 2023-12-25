@@ -139,7 +139,7 @@ void draw_state(Board *board) {
     for (int c = 0; c < board->cols; c++) {
       if (board->grid[r][c] == true) {
         int scale = 10;
-        DrawRectangle(r * scale, c * scale, scale, scale, WHITE);
+        DrawRectangle(r * scale, c * scale, scale, scale, BLACK);
       }
     }
   }
@@ -154,20 +154,19 @@ void cleanup(Board *board) {
 
 int main() {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Conway's Game of Life");
-  SetTargetFPS(1);
+  SetTargetFPS(24);
 
-  int grid_width = SCREEN_WIDTH / 10;
-  int grid_height = SCREEN_HEIGHT / 10;
+  const int GRID_WIDTH = SCREEN_WIDTH / 10;
+  const int GRID_HEIGHT = SCREEN_HEIGHT / 10;
   // int grid_width = 10;
   // int grid_height = 10;
 
   Board board = {0};
+  board.rows = GRID_HEIGHT;
+  board.cols = GRID_WIDTH;
+  board.grid = create_grid(board.rows, board.cols);
 
-  board.grid = create_grid(grid_height, grid_width);
-  board.rows = grid_height;
-  board.cols = grid_width;
   fill_grid(&board);
-  // print_grid(&board);
   draw_state(&board);
 
   while (!WindowShouldClose()) {
