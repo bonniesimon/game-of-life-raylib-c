@@ -145,6 +145,13 @@ void draw_state(Board *board) {
   }
 };
 
+void cleanup(Board *board) {
+  for (uint64_t r = 0; r < board->rows; r++) {
+    free(board->grid[r]);
+  }
+  free(board->grid);
+}
+
 int main() {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Conway's Game of Life");
   SetTargetFPS(1);
@@ -172,6 +179,8 @@ int main() {
     }
     EndDrawing();
   }
+
+  cleanup(&board);
 
   return 0;
 }
