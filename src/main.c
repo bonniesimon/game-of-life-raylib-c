@@ -13,6 +13,12 @@ typedef struct {
   int cols;
 } Board;
 
+enum status { PAUSED, PLAYING };
+
+typedef struct {
+  enum status status;
+} State;
+
 int neighbors[][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0},
                       {1, 0},   {-1, 1}, {0, 1},  {1, 1}};
 
@@ -44,7 +50,8 @@ void init_grid(Board *board) {
     for (int c = 0; c < board->cols; c++) {
       // r is the y-axis value
       // c is the x-axis value
-      board->grid[r][c] = GetRandomValue(0, 9) > 8 ? true : false;
+      // board->grid[r][c] = GetRandomValue(0, 9) > 8 ? true : false;
+      board->grid[r][c] = false;
     }
   }
 }
@@ -108,21 +115,17 @@ bool is_reproduction(Board *board, int row, int col) {
 }
 
 void update_state(Board *board) {
-  // printf("------------------------------\n\n");
   bool **new_grid = create_grid(board->rows, board->cols);
   for (int r = 0; r < board->rows; r++) {
     for (int c = 0; c < board->cols; c++) {
-      // printf("%d, %d: %d\n", r, c, board->grid[r][c]);
       if (board->grid[r][c] == false) {
         if (is_reproduction(board, r, c)) {
-          // printf("set_to_true => %d, %d = %d\n", r, c, board->grid[r][c]);
           new_grid[r][c] = true;
         }
       }
 
       if (board->grid[r][c] == true) {
         if (is_underpopulated(board, r, c) || is_overpopulated(board, r, c)) {
-          // printf("set_to_false => %d, %d = %d\n", r, c, board->grid[r][c]);
           new_grid[r][c] = false;
         }
 
@@ -137,6 +140,10 @@ void update_state(Board *board) {
   board->grid = new_grid;
 };
 
+void update_cell(Board *board, int row, int col) {
+  board->grid[row][col] = !board->grid[row][col];
+}
+
 void draw_state(Board *board) {
   const int scale = 10;
 
@@ -149,6 +156,16 @@ void draw_state(Board *board) {
   }
 };
 
+void handle_key_presses(Board *board, State *game_state) {
+  if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON)) {
+    Vector2 mousePosition = GetMousePosition();
+    update_cell(board, mousePosition.y / 10, mousePosition.x / 10);
+  }
+
+  if (IsKeyPressed(KEY_SPACE))
+    game_state->status = game_state->status == PAUSED ? PLAYING : PAUSED;
+}
+
 int main() {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Conway's Game of Life");
   SetTargetFPS(60);
@@ -158,6 +175,7 @@ int main() {
   board.cols = SCREEN_WIDTH / 10;
   board.grid = create_grid(board.rows, board.cols);
 
+  State game_state = {.status = PLAYING};
   init_grid(&board);
 
   while (!WindowShouldClose()) {
@@ -165,8 +183,12 @@ int main() {
     {
       ClearBackground(DARKGRAY);
 
+      handle_key_presses(&board, &game_state);
+
       draw_state(&board);
-      update_state(&board);
+
+      if (game_state.status == PLAYING)
+        update_state(&board);
     }
     EndDrawing();
   }
