@@ -40,17 +40,14 @@ bool **create_grid(int rows, int cols) {
   return grid;
 }
 
-void fill_grid(Board *board) {
+void init_grid(Board *board) {
   for (int r = 0; r < board->rows; r++) {
     for (int c = 0; c < board->cols; c++) {
+      // r is the y-axis value
+      // c is the x-axis value
       board->grid[r][c] = GetRandomValue(0, 9) > 8 ? true : false;
     }
   }
-
-  // board->grid[1][1] = true;
-  // board->grid[2][1] = true;
-  // board->grid[3][1] = true;
-  // board->grid[2][2] = true;
 }
 
 void print_grid(Board *board) {
@@ -60,6 +57,13 @@ void print_grid(Board *board) {
     }
     printf("\n");
   }
+}
+
+void free_grid(Board *board) {
+  for (uint64_t r = 0; r < board->rows; r++) {
+    free(board->grid[r]);
+  }
+  free(board->grid);
 }
 
 int calculate_neighbor_sum(Board *board, int row, int col) {
@@ -75,10 +79,6 @@ int calculate_neighbor_sum(Board *board, int row, int col) {
     }
 
     sum = sum + board->grid[new_row][new_col];
-  }
-
-  if (row == 1 && col == 1) {
-    printf("sum = %d\n", sum);
   }
 
   return sum;
@@ -109,33 +109,38 @@ bool is_reproduction(Board *board, int row, int col) {
 }
 
 void update_state(Board *board) {
-  printf("------------------------------\n\n");
+  // printf("------------------------------\n\n");
+  bool **new_grid = create_grid(board->rows, board->cols);
   for (int r = 0; r < board->rows; r++) {
     for (int c = 0; c < board->cols; c++) {
-      printf("%d, %d: %d\n", r, c, board->grid[r][c]);
+      // printf("%d, %d: %d\n", r, c, board->grid[r][c]);
       if (board->grid[r][c] == false) {
         if (is_reproduction(board, r, c)) {
-          printf("set_to_true => %d, %d = %d\n", r, c, board->grid[r][c]);
-          board->grid[r][c] = true;
+          // printf("set_to_true => %d, %d = %d\n", r, c, board->grid[r][c]);
+          new_grid[r][c] = true;
         }
       }
 
       if (board->grid[r][c] == true) {
         if (is_underpopulated(board, r, c) || is_overpopulated(board, r, c)) {
-          printf("set_to_false => %d, %d = %d\n", r, c, board->grid[r][c]);
-          board->grid[r][c] = false;
+          // printf("set_to_false => %d, %d = %d\n", r, c, board->grid[r][c]);
+          new_grid[r][c] = false;
         }
 
         if (is_new_generation_possible(board, r, c)) {
-          board->grid[r][c] = true;
+          new_grid[r][c] = true;
         }
       }
     }
   }
+
+  free_grid(board);
+  board->grid = new_grid;
 };
 
 void draw_state(Board *board) {
   const int scale = 10;
+
   for (int r = 0; r < board->rows; r++) {
     for (int c = 0; c < board->cols; c++) {
       if (board->grid[r][c] == true) {
@@ -145,41 +150,29 @@ void draw_state(Board *board) {
   }
 };
 
-void cleanup(Board *board) {
-  for (uint64_t r = 0; r < board->rows; r++) {
-    free(board->grid[r]);
-  }
-  free(board->grid);
-}
-
 int main() {
   InitWindow(SCREEN_WIDTH, SCREEN_HEIGHT, "Conway's Game of Life");
-  SetTargetFPS(24);
-
-  const int GRID_WIDTH = SCREEN_WIDTH / 10;
-  const int GRID_HEIGHT = SCREEN_HEIGHT / 10;
-  // int grid_width = 10;
-  // int grid_height = 10;
+  SetTargetFPS(60);
 
   Board board = {0};
-  board.rows = GRID_HEIGHT;
-  board.cols = GRID_WIDTH;
+  board.rows = SCREEN_HEIGHT / 10;
+  board.cols = SCREEN_WIDTH / 10;
   board.grid = create_grid(board.rows, board.cols);
 
-  fill_grid(&board);
-  draw_state(&board);
+  init_grid(&board);
 
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
       ClearBackground(DARKGRAY);
-      update_state(&board);
+
       draw_state(&board);
+      update_state(&board);
     }
     EndDrawing();
   }
 
-  cleanup(&board);
+  free_grid(&board);
 
   return 0;
 }
