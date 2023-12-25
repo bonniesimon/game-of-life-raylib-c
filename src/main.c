@@ -96,7 +96,7 @@ bool is_underpopulated(Board *board, int row, int col) {
   return sum < 2;
 }
 
-bool is_new_generation_possible(Board *board, int row, int col) {
+bool should_this_generation_survive(Board *board, int row, int col) {
   int sum = calculate_neighbor_sum(board, row, col);
 
   return sum == 2 || sum == 3;
@@ -108,7 +108,7 @@ bool is_overpopulated(Board *board, int row, int col) {
   return sum > 3;
 }
 
-bool is_reproduction(Board *board, int row, int col) {
+bool can_reproduce(Board *board, int row, int col) {
   int sum = calculate_neighbor_sum(board, row, col);
 
   return sum == 3;
@@ -116,22 +116,21 @@ bool is_reproduction(Board *board, int row, int col) {
 
 void update_state(Board *board) {
   bool **new_grid = create_grid(board->rows, board->cols);
+
   for (int r = 0; r < board->rows; r++) {
     for (int c = 0; c < board->cols; c++) {
-      if (board->grid[r][c] == false) {
-        if (is_reproduction(board, r, c)) {
-          new_grid[r][c] = true;
-        }
+      if (board->grid[r][c] == false && can_reproduce(board, r, c)) {
+        new_grid[r][c] = true;
       }
 
-      if (board->grid[r][c] == true) {
-        if (is_underpopulated(board, r, c) || is_overpopulated(board, r, c)) {
-          new_grid[r][c] = false;
-        }
+      if (board->grid[r][c] == true &&
+          (is_underpopulated(board, r, c) || is_overpopulated(board, r, c))) {
+        new_grid[r][c] = false;
+      }
 
-        if (is_new_generation_possible(board, r, c)) {
-          new_grid[r][c] = true;
-        }
+      if (board->grid[r][c] == true &&
+          should_this_generation_survive(board, r, c)) {
+        new_grid[r][c] = true;
       }
     }
   }
