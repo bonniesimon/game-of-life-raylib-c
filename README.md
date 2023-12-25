@@ -3,4 +3,5 @@
 Program to emulate Conway's Game of Life
 
 
-![Kapture 2023-12-25 at 14 16 13](https://github.com/bonniesimon/game-of-life-raylib-c/assets/49012815/5bddb303-a75f-411e-a12b-91f2232de852)
+
+![Kapture 2023-12-26 at 00 41 07](https://github.com/bonniesimon/game-of-life-raylib-c/assets/49012815/a131feb1-39e1-494c-9d7d-b7726ecd2732)
