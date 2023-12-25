@@ -17,6 +17,7 @@ enum status { PAUSED, PLAYING };
 
 typedef struct {
   enum status status;
+  bool displayHelp;
 } State;
 
 int neighbors[][2] = {{-1, -1}, {0, -1}, {1, -1}, {-1, 0},
@@ -50,8 +51,7 @@ void init_grid(Board *board) {
     for (int c = 0; c < board->cols; c++) {
       // r is the y-axis value
       // c is the x-axis value
-      // board->grid[r][c] = GetRandomValue(0, 9) > 8 ? true : false;
-      board->grid[r][c] = false;
+      board->grid[r][c] = GetRandomValue(0, 30) > 27 ? true : false;
     }
   }
 }
@@ -162,8 +162,31 @@ void handle_key_presses(Board *board, State *game_state) {
     update_cell(board, mousePosition.y / 10, mousePosition.x / 10);
   }
 
+  if (IsKeyPressed(KEY_H)) {
+    game_state->displayHelp = !game_state->displayHelp;
+  }
+
   if (IsKeyPressed(KEY_SPACE))
     game_state->status = game_state->status == PAUSED ? PLAYING : PAUSED;
+}
+
+void draw_help_ui(State *game_state) {
+  if (game_state->displayHelp) {
+    DrawRectangle(10, 10, 250, 113, Fade(SKYBLUE, 0.95f));
+    DrawRectangleLines(10, 10, 250, 113, BLUE);
+
+    DrawText("Keymaps:", 20, 20, 10, BLACK);
+    DrawText("h - Toggle help menu", 40, 40, 10, BLACK);
+    DrawText("Space - Play / Pause", 40, 60, 10, BLACK);
+    DrawText("Guide:", 20, 80, 10, BLACK);
+    DrawText("- Pause and then click to update cell", 40, 100, 10, DARKGRAY);
+  }
+
+  DrawText(game_state->status == PAUSED ? "PAUSED" : "PLAYING",
+           SCREEN_WIDTH / 2 - 10, 5, 20, YELLOW);
+
+  DrawText("press (h) to display help", SCREEN_WIDTH / 2 - 10,
+           SCREEN_HEIGHT - 16, 10, SKYBLUE);
 }
 
 int main() {
@@ -175,13 +198,14 @@ int main() {
   board.cols = SCREEN_WIDTH / 10;
   board.grid = create_grid(board.rows, board.cols);
 
-  State game_state = {.status = PLAYING};
+  State game_state = {.status = PLAYING, .displayHelp = false};
   init_grid(&board);
 
   while (!WindowShouldClose()) {
     BeginDrawing();
     {
       ClearBackground(DARKGRAY);
+      draw_help_ui(&game_state);
 
       handle_key_presses(&board, &game_state);
 
