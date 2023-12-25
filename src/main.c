@@ -135,11 +135,11 @@ void update_state(Board *board) {
 };
 
 void draw_state(Board *board) {
+  const int scale = 10;
   for (int r = 0; r < board->rows; r++) {
     for (int c = 0; c < board->cols; c++) {
       if (board->grid[r][c] == true) {
-        int scale = 10;
-        DrawRectangle(r * scale, c * scale, scale, scale, BLACK);
+        DrawRectangle(c * scale, r * scale, scale, scale, BLACK);
       }
     }
   }
